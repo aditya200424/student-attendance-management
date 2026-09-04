@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in — Attendo</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+<div class="auth-wrap">
+  <div class="auth-visual">
+    <div class="logo"><span class="mark" style="background:#fff;color:#0a0a0a;">A</span> Attendo</div>
+    <div>
+      <h1 style="color:#fff; font-size:2.2rem; line-height:1.15;">Every login is a hash lookup, not a table scan.</h1>
+      <p style="color:rgba(255,255,255,0.6); margin-top:16px; max-width:380px; line-height:1.6;">
+        Credentials resolve against HashMap-indexed records in O(1) average time — Admin, Teacher and Student each land on a purpose-built dashboard.
+      </p>
+    </div>
+    <div style="display:flex; gap:24px;">
+      <div><div style="font-family:'Fraunces',serif; font-size:1.6rem;">SHA-256</div><div style="font-size:0.76rem; color:rgba(255,255,255,0.5); text-transform:uppercase; letter-spacing:0.06em;">Password hashing</div></div>
+      <div><div style="font-family:'Fraunces',serif; font-size:1.6rem;">JWT</div><div style="font-size:0.76rem; color:rgba(255,255,255,0.5); text-transform:uppercase; letter-spacing:0.06em;">Session tokens</div></div>
+    </div>
+  </div>
+
+  <div class="auth-form-side">
+    <div class="auth-box">
+      <a href="index.html" style="font-size:0.85rem; color:var(--muted); display:inline-block; margin-bottom:24px;"><i class="fa-solid fa-arrow-left"></i> Back home</a>
+      <h2 style="font-size:1.7rem; margin-bottom:6px;">Welcome back</h2>
+      <p style="color:var(--muted); margin-bottom:28px; font-size:0.92rem;">Sign in to your Attendo dashboard.</p>
+
+      <div class="role-tabs">
+        <div class="role-tab active" data-role="ADMIN">Admin</div>
+        <div class="role-tab" data-role="TEACHER">Teacher</div>
+        <div class="role-tab" data-role="STUDENT">Student</div>
+      </div>
+
+      <form id="loginForm">
+        <div class="field">
+          <label id="idLabel">Admin ID or Email</label>
+          <input type="text" id="loginId" placeholder="e.g. ADM001" required>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;" id="loginBtn">
+          Sign in <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <div style="margin-top:22px; padding:14px 16px; background:var(--paper-dim); border-radius:12px; font-size:0.8rem; color:var(--muted);">
+        <strong style="color:var(--ink);">Demo credentials</strong><br>
+        Admin: ADM001 / admin123<br>
+        Teacher: TCH001 / teacher123<br>
+        Student: STU001 / student123
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script>
+let selectedRole = 'ADMIN';
+const idLabels = { ADMIN: 'Admin ID or Email', TEACHER: 'Teacher ID or Email', STUDENT: 'Student ID, Roll No. or Email' };
+const idPlaceholders = { ADMIN: 'e.g. ADM001', TEACHER: 'e.g. TCH001', STUDENT: 'e.g. STU001 or CSE21001' };
+
+document.querySelectorAll('.role-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    selectedRole = tab.dataset.role;
+    document.getElementById('idLabel').textContent = idLabels[selectedRole];
+    document.getElementById('loginId').placeholder = idPlaceholders[selectedRole];
+  });
+});
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('loginId').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px;"></span> Signing in...';
+
+  try {
+    const res = await Api.login(id, password, selectedRole);
+    Auth.save(res.data);
+    showToast(`Welcome, ${res.data.name}`, 'success');
+    setTimeout(() => {
+      const dest = { ADMIN: 'admin-dashboard.html', TEACHER: 'teacher-dashboard.html', STUDENT: 'student-dashboard.html' }[selectedRole];
+      window.location.href = dest;
+    }, 600);
+  } catch (err) {
+    showToast(err.message || 'Login failed', 'error');
+    btn.disabled = false;
+    btn.innerHTML = 'Sign in <i class="fa-solid fa-arrow-right"></i>';
+  }
+});
+</script>
+</body>
+</html>

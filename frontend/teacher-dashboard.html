@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Dashboard — Attendo</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="logo"><span class="mark">A</span> Attendo</div>
+    <div class="side-link active" data-section="take"><i class="fa-solid fa-clipboard-check"></i> Take Attendance</div>
+    <div class="side-link" data-section="history"><i class="fa-solid fa-clock-rotate-left"></i> History</div>
+    <div class="side-link" data-section="students"><i class="fa-solid fa-user-graduate"></i> Search Students</div>
+    <div class="sidebar-footer">
+      <div class="side-link" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <h2 id="sectionTitle">Take Attendance</h2>
+      <div class="flex" style="gap:16px; align-items:center;">
+        <div class="dark-toggle"></div>
+        <div class="user-chip">
+          <span class="avatar-dot" id="userInitials">T</span>
+          <div>
+            <div style="font-weight:600; font-size:0.88rem;" id="userName">Teacher</div>
+            <div style="font-size:0.74rem; color:var(--muted);">Faculty</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- TAKE ATTENDANCE -->
+      <section id="section-take">
+        <div class="card panel" style="margin-bottom:24px;">
+          <div class="grid" style="grid-template-columns: repeat(4,1fr); gap:16px;">
+            <div class="field" style="margin:0;">
+              <label>Subject</label>
+              <select id="subjectSelect"><option value="">Loading...</option></select>
+            </div>
+            <div class="field" style="margin:0;">
+              <label>Department</label>
+              <input type="text" id="deptInput" value="Computer Science">
+            </div>
+            <div class="field" style="margin:0;">
+              <label>Semester / Section</label>
+              <div style="display:flex; gap:8px;">
+                <input type="text" id="semInput" value="3" style="width:60px;">
+                <input type="text" id="secInput" value="A" style="width:60px;">
+              </div>
+            </div>
+            <div class="field" style="margin:0;">
+              <label>Date</label>
+              <input type="date" id="dateInput">
+            </div>
+          </div>
+          <button class="btn btn-outline btn-sm" id="loadClassBtn" style="margin-top:6px;"><i class="fa-solid fa-rotate"></i> Load class</button>
+        </div>
+
+        <div class="card panel">
+          <div class="panel-title">
+            <h3>Mark students</h3>
+            <div class="flex" style="gap:10px;">
+              <button class="btn btn-ghost btn-sm" id="markAllPresentBtn">Mark all present</button>
+              <button class="btn btn-outline btn-sm" id="undoBtn"><i class="fa-solid fa-rotate-left"></i> Undo last</button>
+            </div>
+          </div>
+          <div id="markList"><p style="color:var(--muted); text-align:center; padding:30px 0;">Load a class to begin.</p></div>
+          <div style="margin-top:20px; text-align:right;">
+            <button class="btn btn-primary" id="saveAttendanceBtn"><i class="fa-solid fa-floppy-disk"></i> Save attendance</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- HISTORY -->
+      <section id="section-history" style="display:none;">
+        <div class="card panel">
+          <div class="flex" style="gap:12px; margin-bottom:20px;">
+            <select id="historySubject" style="flex:1;"></select>
+            <input type="date" id="historyDate" style="flex:1;">
+            <button class="btn btn-primary" id="loadHistoryBtn">View</button>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>Student ID</th><th>Status</th><th>Marked at</th></tr></thead>
+            <tbody id="historyBody"><tr><td colspan="3" style="text-align:center;color:var(--muted);">Select subject & date</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- STUDENT SEARCH -->
+      <section id="section-students" style="display:none;">
+        <div class="search-bar" style="margin-bottom:20px;">
+          <i class="fa-solid fa-magnifying-glass" style="color:var(--muted);"></i>
+          <input type="text" id="studentSearch" placeholder="Search by name, ID, roll number...">
+        </div>
+        <div class="card panel">
+          <table class="data-table">
+            <thead><tr><th>Student</th><th>Roll No.</th><th>Department</th><th>Attendance %</th></tr></thead>
+            <tbody id="studentsBody"><tr><td colspan="4" style="text-align:center;color:var(--muted);">Type to search</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script>
+const user = Auth.guard('TEACHER');
+if (user) {
+  document.getElementById('userName').textContent = user.name;
+  document.getElementById('userInitials').textContent = user.name.split(' ').map(n=>n[0]).slice(0,2).join('');
+}
+document.getElementById('logoutBtn').addEventListener('click', () => Auth.logout());
+document.getElementById('dateInput').value = new Date().toISOString().slice(0,10);
+
+const titles = { take: 'Take Attendance', history: 'History', students: 'Search Students' };
+document.querySelectorAll('.side-link[data-section]').forEach(link => {
+  link.addEventListener('click', () => {
+    document.querySelectorAll('.side-link[data-section]').forEach(l => l.classList.remove('active'));
+    link.classList.add('active');
+    document.querySelectorAll('[id^="section-"]').forEach(s => s.style.display = 'none');
+    const sec = link.dataset.section;
+    document.getElementById(`section-${sec}`).style.display = 'block';
+    document.getElementById('sectionTitle').textContent = titles[sec];
+  });
+});
+
+let subjectsCache = [];
+async function loadSubjectOptions() {
+  try {
+    const res = await Api.getSubjects();
+    subjectsCache = res.data;
+    const opts = res.data.map(s => `<option value="${s.subjectId}">${s.subjectName} (${s.subjectCode})</option>`).join('');
+    document.getElementById('subjectSelect').innerHTML = opts || '<option value="">No subjects</option>';
+    document.getElementById('historySubject').innerHTML = opts || '<option value="">No subjects</option>';
+  } catch (e) { showToast(e.message, 'error'); }
+}
+loadSubjectOptions();
+
+let currentClassStudents = [];
+const statusChoices = ['PRESENT', 'ABSENT', 'LATE', 'LEAVE'];
+
+document.getElementById('loadClassBtn').addEventListener('click', async () => {
+  const dept = document.getElementById('deptInput').value.trim();
+  const sem = document.getElementById('semInput').value.trim();
+  const sec = document.getElementById('secInput').value.trim();
+  try {
+    const res = await Api.getStudents({ department: dept, semester: sem, section: sec });
+    currentClassStudents = res.data;
+    renderMarkList();
+  } catch (e) { showToast(e.message, 'error'); }
+});
+
+function renderMarkList() {
+  const container = document.getElementById('markList');
+  if (!currentClassStudents.length) {
+    container.innerHTML = '<p style="color:var(--muted); text-align:center; padding:30px 0;">No students found for that class.</p>';
+    return;
+  }
+  container.innerHTML = currentClassStudents.map(s => `
+    <div class="attendance-mark-row" data-student="${s.studentId}">
+      <span class="table-user"><span class="avatar-dot sm">${(s.name||'?').split(' ').map(n=>n[0]).slice(0,2).join('')}</span> ${s.name} <span style="color:var(--muted); font-size:0.8rem;">(${s.rollNumber || s.studentId})</span></span>
+      <div class="status-pills">
+        ${statusChoices.map(st => `<button type="button" class="status-pill ${st==='PRESENT'?'selected present':''}" data-status="${st}" onclick="selectStatus(this)">${st.charAt(0)+st.slice(1).toLowerCase()}</button>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectStatus(btn) {
+  const row = btn.closest('.attendance-mark-row');
+  row.querySelectorAll('.status-pill').forEach(p => p.className = 'status-pill');
+  btn.classList.add('selected', btn.dataset.status.toLowerCase());
+}
+
+document.getElementById('markAllPresentBtn').addEventListener('click', () => {
+  document.querySelectorAll('.attendance-mark-row').forEach(row => {
+    row.querySelectorAll('.status-pill').forEach(p => p.className = 'status-pill');
+    row.querySelector('[data-status="PRESENT"]').classList.add('selected', 'present');
+  });
+});
+
+document.getElementById('saveAttendanceBtn').addEventListener('click', async () => {
+  const subjectId = document.getElementById('subjectSelect').value;
+  const date = document.getElementById('dateInput').value;
+  const department = document.getElementById('deptInput').value.trim();
+  const semester = document.getElementById('semInput').value.trim();
+  const section = document.getElementById('secInput').value.trim();
+  if (!subjectId || !date) { showToast('Select subject and date first', 'error'); return; }
+
+  const records = [];
+  document.querySelectorAll('.attendance-mark-row').forEach(row => {
+    const selected = row.querySelector('.status-pill.selected');
+    if (selected) records.push({ studentId: row.dataset.student, status: selected.dataset.status });
+  });
+  if (!records.length) { showToast('Mark at least one student', 'error'); return; }
+
+  try {
+    await Api.markAttendance({ subjectId, teacherId: user.id, date, department, semester, section, records });
+    showToast(`Attendance saved for ${records.length} students`, 'success');
+  } catch (e) { showToast(e.message, 'error'); }
+});
+
+document.getElementById('undoBtn').addEventListener('click', async () => {
+  try {
+    const res = await Api.undoAttendance();
+    showToast(res.message || 'Last action undone', 'success');
+  } catch (e) { showToast(e.message, 'error'); }
+});
+
+// History
+document.getElementById('loadHistoryBtn').addEventListener('click', async () => {
+  const subjectId = document.getElementById('historySubject').value;
+  const date = document.getElementById('historyDate').value;
+  if (!subjectId || !date) return;
+  try {
+    const res = await Api.getClassAttendance(subjectId, date);
+    const rows = res.data.map(a => `<tr><td>${a.studentId}</td><td><span class="badge badge-${a.status.toLowerCase()}">${a.status}</span></td><td>${new Date(a.markedAt).toLocaleString()}</td></tr>`).join('');
+    document.getElementById('historyBody').innerHTML = rows || '<tr><td colspan="3" style="text-align:center;color:var(--muted);">No records for that date</td></tr>';
+  } catch (e) { showToast(e.message, 'error'); }
+});
+
+// Student search
+let searchTimer;
+document.getElementById('studentSearch').addEventListener('input', (e) => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(async () => {
+    const q = e.target.value.trim();
+    if (!q) { document.getElementById('studentsBody').innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);">Type to search</td></tr>'; return; }
+    try {
+      const res = await Api.getStudents({ search: q });
+      const rows = await Promise.all(res.data.map(async s => {
+        let pct = 0;
+        try { pct = (await Api.getStudentPercentage(s.studentId)).data; } catch (e) {}
+        const cls = pct >= 75 ? 'badge-present' : pct >= 50 ? 'badge-late' : 'badge-absent';
+        return `<tr><td>${s.name}</td><td>${s.rollNumber||'—'}</td><td>${s.department||'—'}</td><td><span class="badge ${cls}">${pct}%</span></td></tr>`;
+      }));
+      document.getElementById('studentsBody').innerHTML = rows.join('') || '<tr><td colspan="4" style="text-align:center;color:var(--muted);">No matches</td></tr>';
+    } catch (e) { showToast(e.message, 'error'); }
+  }, 300);
+});
+</script>
+</body>
+</html>

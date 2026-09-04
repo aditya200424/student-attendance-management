@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendo — Attendance Tracker System</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container flex-between">
+    <div class="logo"><span class="mark">A</span> Attendo</div>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#testimonials">Testimonials</a></li>
+    </ul>
+    <div class="flex" style="gap:12px;">
+      <a href="login.html" class="btn btn-ghost">Sign in</a>
+      <a href="login.html" class="btn btn-primary">Get started <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container hero-grid">
+    <div>
+      <span class="eyebrow">Hashmap-powered · O(1) lookups</span>
+      <h1>Attendance, tracked<br>at the speed of a<br>hash lookup.</h1>
+      <p class="lead">Attendo replaces spreadsheets and roll-call chaos with instant search, live analytics, and role-based dashboards for admins, teachers, and students — built on core data structures, not a database.</p>
+      <div class="hero-cta">
+        <a href="login.html" class="btn btn-primary">Start tracking <i class="fa-solid fa-arrow-right"></i></a>
+        <a href="#how" class="btn btn-outline">See how it works</a>
+      </div>
+      <div class="hero-stats">
+        <div><div class="stat-num">O(1)</div><div class="stat-label">Avg. lookup time</div></div>
+        <div><div class="stat-num">3</div><div class="stat-label">Role dashboards</div></div>
+        <div><div class="stat-num">100%</div><div class="stat-label">Database-free</div></div>
+      </div>
+    </div>
+    <div class="glass-card hero-visual" style="padding: 28px;">
+      <div class="flex-between" style="margin-bottom:20px;">
+        <span class="eyebrow">Today · CSE-3-A</span>
+        <span class="badge badge-present">92% present</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div class="card" style="padding:14px 16px; display:flex; justify-content:space-between; align-items:center;">
+          <span class="table-user"><span class="avatar-dot sm">AP</span> Aarav Patel</span>
+          <span class="badge badge-present">Present</span>
+        </div>
+        <div class="card" style="padding:14px 16px; display:flex; justify-content:space-between; align-items:center;">
+          <span class="table-user"><span class="avatar-dot sm">DS</span> Diya Sharma</span>
+          <span class="badge badge-late">Late</span>
+        </div>
+        <div class="card" style="padding:14px 16px; display:flex; justify-content:space-between; align-items:center;">
+          <span class="table-user"><span class="avatar-dot sm">VS</span> Vivaan Singh</span>
+          <span class="badge badge-absent">Absent</span>
+        </div>
+        <div class="card" style="padding:14px 16px; display:flex; justify-content:space-between; align-items:center;">
+          <span class="table-user"><span class="avatar-dot sm">IV</span> Ishita Verma</span>
+          <span class="badge badge-present">Present</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="section" id="features">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Features</span>
+      <h2>Everything a department needs, nothing it doesn't.</h2>
+    </div>
+    <div class="grid feature-grid">
+      <div class="card feature-card">
+        <div class="icon"><i class="fa-solid fa-bolt"></i></div>
+        <h3>Instant search</h3>
+        <p>Find any student by ID, roll number, name, department or section in constant time via hash-indexed lookups.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="icon"><i class="fa-solid fa-clipboard-check"></i></div>
+        <h3>One-tap attendance</h3>
+        <p>Teachers mark a whole class present, absent, late, or on leave in seconds, with instant undo.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="icon"><i class="fa-solid fa-chart-line"></i></div>
+        <h3>Live analytics</h3>
+        <p>Trend lines, department comparisons, and leaderboards render straight from in-memory data structures.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <h3>Role-based security</h3>
+        <p>JWT authentication and SHA-256 password hashing keep admin, teacher, and student data properly separated.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="icon"><i class="fa-solid fa-file-export"></i></div>
+        <h3>Exportable reports</h3>
+        <p>Download attendance history and eligibility reports for any student, class, or subject.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="icon"><i class="fa-solid fa-layer-group"></i></div>
+        <h3>Zero database</h3>
+        <p>Everything runs on HashMap, HashSet, Stack, Queue and PriorityQueue — a live demonstration of DSA in production.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="how" style="background: var(--paper);">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">How it works</span>
+      <h2>From roll call to report in four steps.</h2>
+    </div>
+    <div class="grid steps">
+      <div class="card step">
+        <h3>Sign in</h3>
+        <p style="color:var(--muted); font-size:0.9rem;">Admins, teachers, and students each get a dedicated, secured dashboard.</p>
+      </div>
+      <div class="card step">
+        <h3>Mark attendance</h3>
+        <p style="color:var(--muted); font-size:0.9rem;">Teachers select a class, subject, and date, then tag each student's status.</p>
+      </div>
+      <div class="card step">
+        <h3>Data indexes instantly</h3>
+        <p style="color:var(--muted); font-size:0.9rem;">Every record hashes into memory for O(1) average lookups and updates.</p>
+      </div>
+      <div class="card step">
+        <h3>Everyone sees results</h3>
+        <p style="color:var(--muted); font-size:0.9rem;">Percentages, trends, and alerts update live across every dashboard.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="testimonials">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Testimonials</span>
+      <h2>Trusted by departments who used to dread roll call.</h2>
+    </div>
+    <div class="grid testimonial-grid">
+      <div class="card testimonial-card">
+        <p>"Searching five hundred students used to mean scrolling a spreadsheet. Now it's instant."</p>
+        <div class="testimonial-who"><span class="avatar-dot">RM</span><div><strong style="font-size:0.88rem;">Prof. R. Mehta</strong><div style="font-size:0.78rem;color:var(--muted);">Computer Science Dept.</div></div></div>
+      </div>
+      <div class="card testimonial-card">
+        <p>"The low-attendance alerts caught issues weeks before exam eligibility became a problem."</p>
+        <div class="testimonial-who"><span class="avatar-dot">AS</span><div><strong style="font-size:0.88rem;">Dr. A. Sharma</strong><div style="font-size:0.78rem;color:var(--muted);">Academic Coordinator</div></div></div>
+      </div>
+      <div class="card testimonial-card">
+        <p>"I can finally see my own attendance percentage without emailing anyone. Huge relief."</p>
+        <div class="testimonial-who"><span class="avatar-dot">DP</span><div><strong style="font-size:0.88rem;">Diya P.</strong><div style="font-size:0.78rem;color:var(--muted);">Final-year Student</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col" style="max-width:280px;">
+        <div class="logo"><span class="mark">A</span> Attendo</div>
+        <p style="color:var(--muted); font-size:0.88rem; margin-top:12px;">A HashMap-powered attendance tracker built for academic evaluation and real classroom use.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="login.html">Sign in</a>
+      </div>
+      <div class="footer-col">
+        <h4>Roles</h4>
+        <a href="login.html">Admin</a>
+        <a href="login.html">Teacher</a>
+        <a href="login.html">Student</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 Attendo — Academic project. Not affiliated with any institution.</div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,5 @@
+[
+  { "subjectId": "SUB001", "subjectName": "Data Structures & Algorithms", "subjectCode": "CS301", "department": "Computer Science", "semester": "3", "teacherId": "TCH001" },
+  { "subjectId": "SUB002", "subjectName": "Database Management Systems", "subjectCode": "CS302", "department": "Computer Science", "semester": "3", "teacherId": "TCH001" },
+  { "subjectId": "SUB003", "subjectName": "Operating Systems", "subjectCode": "CS303", "department": "Computer Science", "semester": "3", "teacherId": "TCH002" }
+]

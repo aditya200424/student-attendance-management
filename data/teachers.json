@@ -1,0 +1,22 @@
+[
+  {
+    "teacherId": "TCH001",
+    "name": "Dr. Ananya Sharma",
+    "email": "ananya.sharma@college.edu",
+    "passwordHash": "cde383eee8ee7a4400adf7a15f716f179a2eb97646b37e089eb8d6d04e663416",
+    "department": "Computer Science",
+    "subjectIds": ["SUB001", "SUB002"],
+    "assignedClasses": ["CSE-3-A"],
+    "role": "TEACHER"
+  },
+  {
+    "teacherId": "TCH002",
+    "name": "Prof. Rohan Mehta",
+    "email": "rohan.mehta@college.edu",
+    "passwordHash": "cde383eee8ee7a4400adf7a15f716f179a2eb97646b37e089eb8d6d04e663416",
+    "department": "Computer Science",
+    "subjectIds": ["SUB003"],
+    "assignedClasses": ["CSE-3-A"],
+    "role": "TEACHER"
+  }
+]

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Dashboard — Attendo</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.3/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="logo"><span class="mark">A</span> Attendo</div>
+    <div class="side-link active" data-section="overview"><i class="fa-solid fa-gauge"></i> My Attendance</div>
+    <div class="side-link" data-section="subjects"><i class="fa-solid fa-book"></i> Subject-wise</div>
+    <div class="side-link" data-section="history"><i class="fa-solid fa-calendar-days"></i> History</div>
+    <div class="side-link" data-section="profile"><i class="fa-solid fa-user"></i> Profile</div>
+    <div class="sidebar-footer">
+      <div class="side-link" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <h2 id="sectionTitle">My Attendance</h2>
+      <div class="flex" style="gap:16px; align-items:center;">
+        <div class="dark-toggle"></div>
+        <div class="user-chip">
+          <span class="avatar-dot" id="userInitials">S</span>
+          <div>
+            <div style="font-weight:600; font-size:0.88rem;" id="userName">Student</div>
+            <div style="font-size:0.74rem; color:var(--muted);">Student</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- OVERVIEW -->
+      <section id="section-overview">
+        <div class="grid" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom:24px;">
+          <div class="card stat-card">
+            <div class="stat-value" id="overallPct">—</div>
+            <div class="stat-label">Overall Attendance</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-value" id="totalRecords">—</div>
+            <div class="stat-label">Total Records</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-value" id="eligibility">—</div>
+            <div class="stat-label">Exam Eligibility</div>
+          </div>
+        </div>
+        <div id="lowAttendanceAlert"></div>
+        <div class="card panel">
+          <div class="panel-title"><h3>Attendance calendar (last 30 records)</h3></div>
+          <div id="calendarGrid" style="display:grid; grid-template-columns:repeat(10,1fr); gap:8px;"></div>
+        </div>
+      </section>
+
+      <!-- SUBJECT WISE -->
+      <section id="section-subjects" style="display:none;">
+        <div class="card panel">
+          <div class="panel-title"><h3>Subject-wise attendance</h3></div>
+          <canvas id="subjectChart" height="100"></canvas>
+        </div>
+      </section>
+
+      <!-- HISTORY -->
+      <section id="section-history" style="display:none;">
+        <div class="card panel">
+          <table class="data-table">
+            <thead><tr><th>Date</th><th>Subject</th><th>Status</th></tr></thead>
+            <tbody id="historyBody"><tr><td colspan="3" style="text-align:center;color:var(--muted);">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- PROFILE -->
+      <section id="section-profile" style="display:none;">
+        <div class="card panel" style="max-width:520px;">
+          <div class="panel-title"><h3>My profile</h3></div>
+          <div class="field"><label>Name</label><input type="text" id="profileName" disabled></div>
+          <div class="field"><label>Student ID</label><input type="text" id="profileId" disabled></div>
+          <div class="field"><label>Roll number</label><input type="text" id="profileRoll" disabled></div>
+          <div class="field"><label>Department</label><input type="text" id="profileDept" disabled></div>
+          <div class="field"><label>Semester / Section</label><input type="text" id="profileSemSec" disabled></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script>
+const user = Auth.guard('STUDENT');
+if (user) {
+  document.getElementById('userName').textContent = user.name;
+  document.getElementById('userInitials').textContent = user.name.split(' ').map(n=>n[0]).slice(0,2).join('');
+}
+document.getElementById('logoutBtn').addEventListener('click', () => Auth.logout());
+
+const titles = { overview: 'My Attendance', subjects: 'Subject-wise', history: 'History', profile: 'Profile' };
+document.querySelectorAll('.side-link[data-section]').forEach(link => {
+  link.addEventListener('click', () => {
+    document.querySelectorAll('.side-link[data-section]').forEach(l => l.classList.remove('active'));
+    link.classList.add('active');
+    document.querySelectorAll('[id^="section-"]').forEach(s => s.style.display = 'none');
+    const sec = link.dataset.section;
+    document.getElementById(`section-${sec}`).style.display = 'block';
+    document.getElementById('sectionTitle').textContent = titles[sec];
+    if (sec === 'history') loadHistory();
+  });
+});
+
+async function loadOverview() {
+  try {
+    const profile = await Api.getStudent(user.id);
+    document.getElementById('profileName').value = profile.data.name;
+    document.getElementById('profileId').value = profile.data.studentId;
+    document.getElementById('profileRoll').value = profile.data.rollNumber || '';
+    document.getElementById('profileDept').value = profile.data.department || '';
+    document.getElementById('profileSemSec').value = `${profile.data.semester || ''} / ${profile.data.section || ''}`;
+  } catch (e) { console.error(e); }
+
+  try {
+    const report = await Api.getStudentReport(user.id);
+    const r = report.data;
+    document.getElementById('overallPct').textContent = r.overallPercentage + '%';
+    document.getElementById('totalRecords').textContent = r.totalRecords;
+    document.getElementById('eligibility').textContent = r.lowAttendance ? 'At risk' : 'Eligible';
+    document.getElementById('eligibility').style.color = r.lowAttendance ? 'var(--absent)' : 'var(--present)';
+
+    if (r.lowAttendance) {
+      document.getElementById('lowAttendanceAlert').innerHTML = `
+        <div class="card" style="padding:16px 20px; background:var(--absent-bg); border-color:transparent; margin-bottom:20px; display:flex; gap:12px; align-items:center;">
+          <i class="fa-solid fa-triangle-exclamation" style="color:var(--absent);"></i>
+          <div style="color:var(--absent); font-size:0.9rem; font-weight:600;">Your attendance is below 75%. You may lose exam eligibility — please contact your department.</div>
+        </div>`;
+    }
+
+    if (r.subjectWise.length) {
+      new Chart(document.getElementById('subjectChart'), {
+        type: 'bar',
+        data: {
+          labels: r.subjectWise.map(s => s.subjectId),
+          datasets: [{ label: 'Attendance %', data: r.subjectWise.map(s => s.percentage), backgroundColor: '#3d3aff', borderRadius: 6 }]
+        },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } }
+      });
+    }
+  } catch (e) { console.error(e); }
+
+  try {
+    const att = await Api.getStudentAttendance(user.id);
+    const recent = att.data.slice(-30);
+    const colorFor = { PRESENT: 'var(--present)', ABSENT: 'var(--absent)', LATE: 'var(--late)', LEAVE: 'var(--leave)', HOLIDAY: 'var(--muted)' };
+    document.getElementById('calendarGrid').innerHTML = recent.map(a =>
+      `<div title="${a.date}: ${a.status}" style="aspect-ratio:1; border-radius:6px; background:${colorFor[a.status] || '#ccc'};"></div>`
+    ).join('') || '<p style="color:var(--muted);">No attendance records yet.</p>';
+  } catch (e) { console.error(e); }
+}
+
+async function loadHistory() {
+  try {
+    const att = await Api.getStudentAttendance(user.id);
+    const rows = att.data.slice().reverse().map(a =>
+      `<tr><td>${a.date}</td><td>${a.subjectId}</td><td><span class="badge badge-${a.status.toLowerCase()}">${a.status}</span></td></tr>`
+    ).join('');
+    document.getElementById('historyBody').innerHTML = rows || '<tr><td colspan="3" style="text-align:center;color:var(--muted);">No records yet</td></tr>';
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+loadOverview();
+</script>
+</body>
+</html>

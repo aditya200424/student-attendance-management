@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Attendo</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.3/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="logo"><span class="mark">A</span> Attendo</div>
+    <div class="side-link active" data-section="overview"><i class="fa-solid fa-gauge"></i> Overview</div>
+    <div class="side-link" data-section="students"><i class="fa-solid fa-user-graduate"></i> Students</div>
+    <div class="side-link" data-section="teachers"><i class="fa-solid fa-chalkboard-user"></i> Teachers</div>
+    <div class="side-link" data-section="subjects"><i class="fa-solid fa-book"></i> Subjects</div>
+    <div class="side-link" data-section="reports"><i class="fa-solid fa-chart-pie"></i> Reports</div>
+    <div class="side-link" data-section="settings"><i class="fa-solid fa-gear"></i> Settings</div>
+    <div class="sidebar-footer">
+      <div class="side-link" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <h2 id="sectionTitle">Overview</h2>
+      <div class="flex" style="gap:16px; align-items:center;">
+        <div class="dark-toggle"></div>
+        <div class="user-chip">
+          <span class="avatar-dot" id="userInitials">A</span>
+          <div>
+            <div style="font-weight:600; font-size:0.88rem;" id="userName">Admin</div>
+            <div style="font-size:0.74rem; color:var(--muted);">Administrator</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- OVERVIEW -->
+      <section id="section-overview">
+        <div class="grid stat-cards">
+          <div class="card stat-card">
+            <div class="stat-top"><div class="stat-icon"><i class="fa-solid fa-user-graduate"></i></div></div>
+            <div class="stat-value" id="statStudents">—</div>
+            <div class="stat-label">Total Students</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-top"><div class="stat-icon"><i class="fa-solid fa-chalkboard-user"></i></div></div>
+            <div class="stat-value" id="statTeachers">—</div>
+            <div class="stat-label">Total Teachers</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-top"><div class="stat-icon"><i class="fa-solid fa-calendar-check"></i></div></div>
+            <div class="stat-value" id="statPresentPct">—</div>
+            <div class="stat-label">Today's Present %</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-top"><div class="stat-icon"><i class="fa-solid fa-layer-group"></i></div></div>
+            <div class="stat-value" id="statClasses">—</div>
+            <div class="stat-label">Active Classes</div>
+          </div>
+        </div>
+
+        <div class="grid panel-grid">
+          <div class="card panel">
+            <div class="panel-title"><h3>Attendance trend (30 days)</h3></div>
+            <canvas id="trendChart" height="110"></canvas>
+          </div>
+          <div class="card panel">
+            <div class="panel-title"><h3>Department-wise average</h3></div>
+            <canvas id="deptChart" height="110"></canvas>
+          </div>
+        </div>
+
+        <div class="card panel">
+          <div class="panel-title"><h3>Top attendance leaderboard</h3><span class="eyebrow">via PriorityQueue</span></div>
+          <table class="data-table">
+            <thead><tr><th>Rank</th><th>Student</th><th>Department</th><th>Percentage</th></tr></thead>
+            <tbody id="leaderboardBody"><tr><td colspan="4" style="text-align:center; color:var(--muted);">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- STUDENTS -->
+      <section id="section-students" style="display:none;">
+        <div class="flex-between" style="margin-bottom:20px;">
+          <div class="search-bar">
+            <i class="fa-solid fa-magnifying-glass" style="color:var(--muted);"></i>
+            <input type="text" id="studentSearch" placeholder="Search by name, ID, roll no, department...">
+          </div>
+          <button class="btn btn-primary" id="addStudentBtn"><i class="fa-solid fa-plus"></i> Add Student</button>
+        </div>
+        <div class="card panel">
+          <table class="data-table">
+            <thead><tr><th>Student</th><th>Roll No.</th><th>Department</th><th>Sem / Section</th><th>Attendance %</th><th></th></tr></thead>
+            <tbody id="studentsBody"><tr><td colspan="6" style="text-align:center; color:var(--muted);">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TEACHERS -->
+      <section id="section-teachers" style="display:none;">
+        <div class="flex-between" style="margin-bottom:20px;">
+          <h3 style="font-size:1rem;">Manage teaching staff</h3>
+          <button class="btn btn-primary" id="addTeacherBtn"><i class="fa-solid fa-plus"></i> Add Teacher</button>
+        </div>
+        <div class="card panel">
+          <table class="data-table">
+            <thead><tr><th>Teacher</th><th>Email</th><th>Department</th><th>Assigned classes</th><th></th></tr></thead>
+            <tbody id="teachersBody"><tr><td colspan="5" style="text-align:center; color:var(--muted);">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SUBJECTS -->
+      <section id="section-subjects" style="display:none;">
+        <div class="flex-between" style="margin-bottom:20px;">
+          <h3 style="font-size:1rem;">Subjects &amp; assignment</h3>
+          <button class="btn btn-primary" id="addSubjectBtn"><i class="fa-solid fa-plus"></i> Add Subject</button>
+        </div>
+        <div class="card panel">
+          <table class="data-table">
+            <thead><tr><th>Code</th><th>Subject</th><th>Department</th><th>Semester</th><th></th></tr></thead>
+            <tbody id="subjectsBody"><tr><td colspan="5" style="text-align:center; color:var(--muted);">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- REPORTS -->
+      <section id="section-reports" style="display:none;">
+        <div class="card panel">
+          <div class="panel-title"><h3>Lookup a student report</h3></div>
+          <div class="flex" style="gap:12px; margin-bottom:20px;">
+            <input type="text" id="reportStudentId" placeholder="Enter Student ID e.g. STU001" style="flex:1; padding:12px 14px; border-radius:10px; border:1px solid var(--line-strong);">
+            <button class="btn btn-primary" id="loadReportBtn">Load report</button>
+          </div>
+          <div id="reportResult"></div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="section-settings" style="display:none;">
+        <div class="card panel" style="max-width:520px;">
+          <div class="panel-title"><h3>Admin profile</h3></div>
+          <div class="field"><label>Name</label><input type="text" id="settingsName" disabled></div>
+          <div class="field"><label>Admin ID</label><input type="text" id="settingsId" disabled></div>
+          <p style="color:var(--muted); font-size:0.84rem;">Profile editing is not wired to a persistence endpoint in this build — extend AdminController to enable it.</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script>
+const user = Auth.guard('ADMIN');
+if (user) {
+  document.getElementById('userName').textContent = user.name;
+  document.getElementById('userInitials').textContent = user.name.split(' ').map(n => n[0]).slice(0,2).join('');
+  document.getElementById('settingsName').value = user.name;
+  document.getElementById('settingsId').value = user.id;
+}
+document.getElementById('logoutBtn').addEventListener('click', () => Auth.logout());
+
+// ---- Section switching ----
+const titles = { overview: 'Overview', students: 'Students', teachers: 'Teachers', subjects: 'Subjects', reports: 'Reports', settings: 'Settings' };
+document.querySelectorAll('.side-link[data-section]').forEach(link => {
+  link.addEventListener('click', () => {
+    document.querySelectorAll('.side-link[data-section]').forEach(l => l.classList.remove('active'));
+    link.classList.add('active');
+    document.querySelectorAll('[id^="section-"]').forEach(s => s.style.display = 'none');
+    const sec = link.dataset.section;
+    document.getElementById(`section-${sec}`).style.display = 'block';
+    document.getElementById('sectionTitle').textContent = titles[sec];
+    if (sec === 'students') loadStudents();
+    if (sec === 'teachers') loadTeachers();
+    if (sec === 'subjects') loadSubjects();
+  });
+});
+
+function badgeFor(pct) {
+  const cls = pct >= 75 ? 'badge-present' : pct >= 50 ? 'badge-late' : 'badge-absent';
+  return `<span class="badge ${cls}">${pct}%</span>`;
+}
+function initialsOf(name) { return (name || '?').split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase(); }
+
+// ---- Overview ----
+async function loadOverview() {
+  try {
+    const summary = await Api.getDashboardSummary();
+    document.getElementById('statStudents').textContent = summary.data.totalStudents;
+    document.getElementById('statTeachers').textContent = summary.data.totalTeachers;
+    document.getElementById('statPresentPct').textContent = summary.data.presentPercentage + '%';
+    document.getElementById('statClasses').textContent = summary.data.totalClasses;
+  } catch (e) { showToast(e.message, 'error'); }
+
+  try {
+    const trend = await Api.getMonthlyTrend(30);
+    new Chart(document.getElementById('trendChart'), {
+      type: 'line',
+      data: {
+        labels: trend.data.map(d => d.date.slice(5)),
+        datasets: [{ label: 'Present %', data: trend.data.map(d => d.percentage), borderColor: '#3d3aff', backgroundColor: 'rgba(61,58,255,0.08)', fill: true, tension: 0.35, pointRadius: 0 }]
+      },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } }
+    });
+  } catch (e) { console.error(e); }
+
+  try {
+    const dept = await Api.getDepartmentWise();
+    new Chart(document.getElementById('deptChart'), {
+      type: 'bar',
+      data: {
+        labels: dept.data.map(d => d.department),
+        datasets: [{ label: 'Avg %', data: dept.data.map(d => d.averagePercentage), backgroundColor: '#0a0a0a', borderRadius: 6 }]
+      },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } }
+    });
+  } catch (e) { console.error(e); }
+
+  try {
+    const board = await Api.getLeaderboard(10);
+    const rows = board.data.map(r => `<tr><td>#${r.rank}</td><td>${r.name}</td><td>${r.department || '—'}</td><td>${badgeFor(r.percentage)}</td></tr>`).join('');
+    document.getElementById('leaderboardBody').innerHTML = rows || '<tr><td colspan="4" style="text-align:center;color:var(--muted);">No attendance data yet</td></tr>';
+  } catch (e) { console.error(e); }
+}
+
+// ---- Students ----
+async function loadStudents(query) {
+  try {
+    const res = await Api.getStudents(query ? { search: query } : {});
+    const rows = await Promise.all(res.data.map(async s => {
+      let pct = 0;
+      try { pct = (await Api.getStudentPercentage(s.studentId)).data; } catch (e) {}
+      return `<tr>
+        <td class="table-user"><span class="avatar-dot sm">${initialsOf(s.name)}</span> ${s.name}</td>
+        <td>${s.rollNumber || '—'}</td>
+        <td>${s.department || '—'}</td>
+        <td>${s.semester || '—'} / ${s.section || '—'}</td>
+        <td>${badgeFor(pct)}</td>
+        <td><button class="btn btn-sm btn-danger" onclick="deleteStudent('${s.studentId}')"><i class="fa-solid fa-trash"></i></button></td>
+      </tr>`;
+    }));
+    document.getElementById('studentsBody').innerHTML = rows.join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);">No students found</td></tr>';
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+let searchTimer;
+document.getElementById('studentSearch').addEventListener('input', (e) => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => loadStudents(e.target.value), 300);
+});
+
+async function deleteStudent(id) {
+  if (!confirm('Remove this student?')) return;
+  try {
+    await Api.deleteStudent(id);
+    showToast('Student removed', 'success');
+    loadStudents(document.getElementById('studentSearch').value);
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+document.getElementById('addStudentBtn').addEventListener('click', async () => {
+  const name = prompt('Student full name:'); if (!name) return;
+  const rollNumber = prompt('Roll number:'); if (!rollNumber) return;
+  const email = prompt('Email:') || '';
+  const department = prompt('Department:', 'Computer Science') || 'Computer Science';
+  const semester = prompt('Semester:', '1') || '1';
+  const section = prompt('Section:', 'A') || 'A';
+  try {
+    await Api.createStudent({ rollNumber, name, email, department, semester, section });
+    showToast('Student added (default password = roll number)', 'success');
+    loadStudents();
+  } catch (e) { showToast(e.message, 'error'); }
+});
+
+// ---- Teachers ----
+async function loadTeachers() {
+  try {
+    const res = await Api.getTeachers();
+    const rows = res.data.map(t => `<tr>
+      <td class="table-user"><span class="avatar-dot sm">${initialsOf(t.name)}</span> ${t.name}</td>
+      <td>${t.email || '—'}</td>
+      <td>${t.department || '—'}</td>
+      <td>${(t.assignedClasses || []).join(', ') || '—'}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="deleteTeacher('${t.teacherId}')"><i class="fa-solid fa-trash"></i></button></td>
+    </tr>`).join('');
+    document.getElementById('teachersBody').innerHTML = rows || '<tr><td colspan="5" style="text-align:center;color:var(--muted);">No teachers found</td></tr>';
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+async function deleteTeacher(id) {
+  if (!confirm('Remove this teacher?')) return;
+  try { await Api.deleteTeacher(id); showToast('Teacher removed', 'success'); loadTeachers(); }
+  catch (e) { showToast(e.message, 'error'); }
+}
+
+document.getElementById('addTeacherBtn').addEventListener('click', async () => {
+  const name = prompt('Teacher full name:'); if (!name) return;
+  const email = prompt('Email:') || '';
+  const department = prompt('Department:', 'Computer Science') || 'Computer Science';
+  try {
+    await Api.createTeacher({ name, email, department });
+    showToast('Teacher added (default password = teacher@123)', 'success');
+    loadTeachers();
+  } catch (e) { showToast(e.message, 'error'); }
+});
+
+// ---- Subjects ----
+async function loadSubjects() {
+  try {
+    const res = await Api.getSubjects();
+    const rows = res.data.map(s => `<tr>
+      <td><span class="eyebrow">${s.subjectCode || '—'}</span></td>
+      <td>${s.subjectName}</td>
+      <td>${s.department || '—'}</td>
+      <td>${s.semester || '—'}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="deleteSubject('${s.subjectId}')"><i class="fa-solid fa-trash"></i></button></td>
+    </tr>`).join('');
+    document.getElementById('subjectsBody').innerHTML = rows || '<tr><td colspan="5" style="text-align:center;color:var(--muted);">No subjects found</td></tr>';
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+async function deleteSubject(id) {
+  if (!confirm('Remove this subject?')) return;
+  try { await Api.deleteSubject(id); showToast('Subject removed', 'success'); loadSubjects(); }
+  catch (e) { showToast(e.message, 'error'); }
+}
+
+document.getElementById('addSubjectBtn').addEventListener('click', async () => {
+  const subjectName = prompt('Subject name:'); if (!subjectName) return;
+  const subjectCode = prompt('Subject code:', 'CS3XX') || '';
+  const department = prompt('Department:', 'Computer Science') || 'Computer Science';
+  const semester = prompt('Semester:', '1') || '1';
+  try {
+    await Api.createSubject({ subjectName, subjectCode, department, semester });
+    showToast('Subject added', 'success');
+    loadSubjects();
+  } catch (e) { showToast(e.message, 'error'); }
+});
+
+// ---- Reports ----
+document.getElementById('loadReportBtn').addEventListener('click', async () => {
+  const id = document.getElementById('reportStudentId').value.trim();
+  if (!id) return;
+  try {
+    const res = await Api.getStudentReport(id);
+    const r = res.data;
+    document.getElementById('reportResult').innerHTML = `
+      <div class="grid" style="grid-template-columns: repeat(3,1fr); gap:16px; margin-bottom:20px;">
+        <div class="card" style="padding:18px;"><div class="stat-label">Overall %</div><div class="stat-value">${r.overallPercentage}%</div></div>
+        <div class="card" style="padding:18px;"><div class="stat-label">Total Records</div><div class="stat-value">${r.totalRecords}</div></div>
+        <div class="card" style="padding:18px;"><div class="stat-label">Status</div><div class="stat-value" style="font-size:1.1rem;">${r.lowAttendance ? '⚠️ Low' : '✅ Good'}</div></div>
+      </div>
+      <table class="data-table"><thead><tr><th>Subject ID</th><th>Percentage</th></tr></thead>
+      <tbody>${r.subjectWise.map(s => `<tr><td>${s.subjectId}</td><td>${badgeFor(s.percentage)}</td></tr>`).join('') || '<tr><td colspan="2" style="text-align:center;color:var(--muted);">No records</td></tr>'}</tbody></table>
+    `;
+  } catch (e) { showToast(e.message, 'error'); }
+});
+
+loadOverview();
+</script>
+</body>
+</html>
